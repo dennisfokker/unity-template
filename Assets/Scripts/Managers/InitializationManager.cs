@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class InitializationManager : MonoBehaviour
 {
     private const string InitializationSceneName = "InitGame";
-    private static string SceneToReload = "Splash";
+    private static string SceneToReload = "Game";
 
     void Start()
     {
