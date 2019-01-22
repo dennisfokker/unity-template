@@ -1,74 +1,165 @@
 ﻿using System;
+using System.Collections.Generic;
 
+/// <summary>
+/// Defines the max/min of a range of values.
+/// </summary>
+/// <typeparam name="T">Type of range. Must be IComparable</typeparam>
 [Serializable]
-public class Range<T> where T : IComparable<T>
+public abstract class Range<T> where T : IComparable<T>
 {
-    public T Minimum;
-    public T Maximum;
+    public T Minimum
+    {
+        get
+        {
+            return minimum;
+        }
+        set
+        {
+            minimum = value;
 
+            if (!IsValid())
+            {
+                T temp = minimum;
+                minimum = maximum;
+                maximum = temp;
+            }
+        }
+    }
+    public T Maximum {
+        get
+        {
+            return maximum;
+        }
+        set
+        {
+            maximum = value;
+
+            if (!IsValid())
+            {
+                T temp = maximum;
+                maximum = minimum;
+                minimum = temp;
+            }
+        }
+    }
+
+    private T minimum;
+    private T maximum;
+
+    /// <summary>
+    /// Initializes a new instance of the Range structure to the specified maximum and minimum.
+    /// Automatically switches the values around if invalid.
+    /// </summary>
+    /// <param name="minimum">Minimum value.</param>
+    /// <param name="maximum">Maximum value.</param>
     public Range(T minimum, T maximum)
     {
-        Minimum = minimum;
-        Maximum = maximum;
-
-        if (!IsValid())
+        if (IsValid())
         {
-            Minimum = maximum;
-            Maximum = minimum;
+            this.minimum = minimum;
+            this.maximum = maximum;
+        }
+        else
+        {
+            this.minimum = maximum;
+            this.maximum = minimum;
         }
     }
 
-    public static bool operator ==(Range<T> x, Range<T> y)
-    {
-        if (object.ReferenceEquals(x, null) && object.ReferenceEquals(y, null)) return true;
-
-        if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null)) return false;
-
-        return x.Minimum.CompareTo(y.Minimum) == 0 && x.Maximum.CompareTo(y.Maximum) == 0;
-    }
-
-    public static bool operator !=(Range<T> x, Range<T> y)
-    {
-        if (object.ReferenceEquals(x, null) && object.ReferenceEquals(y, null)) return false;
-
-        if (object.ReferenceEquals(x, null) || object.ReferenceEquals(y, null)) return true;
-
-        return x.Minimum.CompareTo(y.Minimum) != 0 || x.Maximum.CompareTo(y.Maximum) != 0;
-    }
-
-    public override string ToString()
-    {
-        return string.Format("[{0} - {1}]", this.Minimum, this.Maximum);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj == null || !(obj is Range<T>))
-        {
-            return false;
-        }
-
-        return Minimum.CompareTo(((Range<T>) obj).Minimum) == 0 && Maximum.CompareTo(((Range<T>) obj).Maximum) == 0;
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            int hash = 17;
-            hash = hash * 23 + Minimum.GetHashCode();
-            hash = hash * 23 + Maximum.GetHashCode();
-            return hash;
-        }
-    }
-
+    /// <summary>
+    /// Check if value is contained withing the range.
+    /// </summary>
+    /// <param name="value">Value to check agains.</param>
+    /// <returns>Whether or not the value is inside the range.</returns>
     public bool ContainsValue(T value)
     {
-        return (this.Minimum.CompareTo(value) <= 0) && (value.CompareTo(this.Maximum) <= 0);
+        return (minimum.CompareTo(value) <= 0) && (value.CompareTo(maximum) <= 0);
     }
 
     private bool IsValid()
     {
-        return this.Minimum.CompareTo(this.Maximum) <= 0;
+        return minimum.CompareTo(maximum) <= 0;
     }
+
+    public static bool operator ==(Range<T> x, Range<T> y)
+    {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null))
+            return true;
+
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            return false;
+
+        return x.minimum.CompareTo(y.minimum) == 0 && x.maximum.CompareTo(y.maximum) == 0;
+    }
+
+    public static bool operator !=(Range<T> x, Range<T> y)
+    {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null))
+            return false;
+
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            return true;
+
+        return x.minimum.CompareTo(y.minimum) != 0 || x.maximum.CompareTo(y.maximum) != 0;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("[{0} - {1}]", minimum, maximum);
+    }
+
+    public override bool Equals(object obj)
+    {
+        var range = obj as Range<T>;
+        return range != null &&
+               EqualityComparer<T>.Default.Equals(minimum, range.minimum) &&
+               EqualityComparer<T>.Default.Equals(maximum, range.maximum);
+    }
+
+    public override int GetHashCode()
+    {
+        var hashCode = -1421831408;
+        hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(minimum);
+        hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(maximum);
+        return hashCode;
+    }
+
+    #region Non-generic implementations to allow serialization
+    [Serializable]
+    public class DoubleRange : Range<double>
+    {
+        public DoubleRange(double minimum, double maximum) : base(minimum, maximum)
+        {
+            // Nothing special to do
+        }
+    }
+
+    [Serializable]
+    public class FloatRange : Range<float>
+    {
+        public FloatRange(float minimum, float maximum) : base(minimum, maximum)
+        {
+            // Nothing special to do
+        }
+    }
+
+    [Serializable]
+    public class IntRange : Range<int>
+    {
+        public IntRange(int minimum, int maximum) : base(minimum, maximum)
+        {
+            // Nothing special to do
+        }
+    }
+
+    [Serializable]
+    public class LongRange : Range<long>
+    {
+        public LongRange(long minimum, long maximum) : base(minimum, maximum)
+        {
+            // Nothing special to do
+        }
+    }
+    #endregion
 }

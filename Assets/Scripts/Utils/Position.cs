@@ -10,12 +10,6 @@ public class Position
     {
         X = x;
         Y = y;
-
-        if (!IsValid())
-        {
-            X = y;
-            Y = x;
-        }
     }
 
     public static bool operator ==(Position x, Position y)
@@ -65,10 +59,5 @@ public class Position
     public bool ContainsValue(int value)
     {
         return (this.X.CompareTo(value) <= 0) && (value.CompareTo(this.Y) <= 0);
-    }
-
-    private bool IsValid()
-    {
-        return this.X.CompareTo(this.Y) <= 0;
     }
 }

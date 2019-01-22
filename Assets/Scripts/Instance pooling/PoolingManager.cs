@@ -11,17 +11,6 @@ public class PoolingManager : MonoBehaviour
 
     void Awake()
     {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-
         // Create pool and loop over all prefabs.
         pool = new List<GameObject>[Prefabs.Length];
         for (int i = 0; i < Prefabs.Length; i++)
